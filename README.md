@@ -1,20 +1,25 @@
-# REST API Library Project
+# Library REST API (FastAPI) — Лабораторна робота №1
 
-## Лабораторна робота №1: Принципи REST API.Модель зрілості API RMM (Richardson Maturity Model).
+## Архітектура проєкту
 
-
-### Опис
-Реалізовано базове API для управління бібліотекою (сутність `Book`).
-
-
-
-### ### Структура API (RMM Level 2)
-- `GET /books` — Отримання списку книг - 200 OK
-- `POST /books` — Додавання нової книги - 201 Created
-- `PUT /books/<id>` — Оновлення даних книги - 200 OK
-- `DELETE /books/<id>` — Видалення книги - 200 OK
+### app/models/ — структури даних та сховище в пам'яті (List[Dict]).
+### app/schemas/ — Pydantic-схеми для валідації запитів та відповідей.
+### app/repository/ — шар доступу до даних (CRUD операції).
+### app/services/ — бізнес-логіка (фільтрація за автором/статусом, сортування за назвою/роком).
+### app/api/ — маршрутизація та обробка HTTP-запитів.
 
 
-### Запуск
-1. Встановити залежності: `pip install flask`
-2. Запустити сервер: `python app.py`
+### ### Запуск проєкту
+# Активація середовища
+venv\Scripts\activate
+
+# Встановлення залежностей
+pip install -r requirements.txt
+
+# Запуск сервера
+uvicorn main:app --reload
+
+
+
+### Тестування. Запуск автоматизованих юніт-тестів:
+#### python -m pytest tests/test_books.py
