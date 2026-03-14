@@ -1,22 +1,37 @@
-from pydantic import BaseModel, Field, ConfigDict
-from uuid import UUID, uuid4
-from typing import Optional, List
-from app.models.book import BookStatus
+from fastapi import APIRouter, HTTPException, Query, Depends, status
+from typing import List
+from app.schemas.book import BookCreate, BookRead
+from app.repository.book_repo import MongoBookRepository
+from app.core.database import get_db
 
-class BookBase(BaseModel):
-    title: str = Field(..., min_length=1, max_length=100)
-    author: str = Field(..., min_length=2, max_length=50)
-    description: Optional[str] = None
-    status: BookStatus = BookStatus.AVAILABLE
-    year: int = Field(..., gt=0, lt=2027)
+router = APIRouter(prefix="/books", tags=["Books"])
 
-class BookCreate(BookBase):
-    pass
+@router.get("/", response_model=List[BookRead])
+async def get_books(
+    limit: int = Query(10, ge=1),
+    offset: int = Query(0, ge=0),
+    db = Depends(get_db)
+):
+    repo = MongoBookRepository(db)
+    return await repo.get_all(limit, offset)
 
-class BookRead(BookBase):
-    id: UUID
-    model_config = ConfigDict(from_attributes=True)
+@router.post("/", response_model=BookRead, status_code=status.HTTP_201_CREATED)
+async def create_book(book_in: BookCreate, db = Depends(get_db)):
+    repo = MongoBookRepository(db)
+    return await repo.create(book_in.model_dump())
 
-class BookCursorPage(BaseModel):
-    items: List[BookRead]
-    next_cursor: Optional[UUID] = None
+@router.get("/{book_id}", response_model=BookRead)
+async def get_book(book_id: str, db = Depends(get_db)):
+    repo = MongoBookRepository(db)
+    book = await repo.get_by_id(book_id)
+    if not book:
+        raise HTTPException(status_code=404, detail="Book not found")
+    return book
+
+@router.delete("/{book_id}", status_code=status.HTTP_204_NO_CONTENT)
+async def delete_book(book_id: str, db = Depends(get_db)):
+    repo = MongoBookRepository(db)
+    deleted = await repo.delete(book_id)
+    if not deleted:
+        raise HTTPException(status_code=404, detail="Book not found")
+    return None

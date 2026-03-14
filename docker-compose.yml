@@ -1,25 +1,24 @@
 services:
-  db:
-    image: postgres:15-alpine
-    container_name: library_db
+  mongo_db:
+    image: mongo:latest
+    restart: always
     environment:
-      POSTGRES_USER: user
-      POSTGRES_PASSWORD: password
-      POSTGRES_DB: library_db
-    ports:
-      - "5432:5432"
+      MONGO_INITDB_ROOT_USERNAME: mongo_admin
+      MONGO_INITDB_ROOT_PASSWORD: password
+      MONGO_INITDB_DATABASE: books
     volumes:
-      - postgres_data:/var/lib/postgresql/data
+      - mongo_data:/data/db
+    ports:
+      - '27017:27017'
 
   api:
     build: .
-    container_name: library_api
-    environment:
-      DATABASE_URL: postgresql://user:password@db:5432/library_db
     ports:
       - "8000:8000"
+    environment:
+      - MONGO_URL=mongodb://mongo_admin:password@mongo_db:27017
     depends_on:
-      - db
+      - mongo_db
 
 volumes:
-  postgres_data:
+  mongo_data:

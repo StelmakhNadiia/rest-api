@@ -1,29 +1,22 @@
 from typing import List, Optional
-from sqlalchemy.orm import Session
-from uuid import UUID
-from app.models.book import Book
+from pydantic_mongo import PydanticObjectId
 
-class BookRepository:
-    def get_all(self, db: Session, limit: int, cursor: Optional[UUID] = None):
-        query = db.query(Book).order_by(Book.id)
-        if cursor:
-            query = query.filter(Book.id > cursor)
-        return query.limit(limit).all()
+class MongoBookRepository:
+    def __init__(self, db):
+        self.collection = db.books
 
-    def get_by_id(self, db: Session, book_id: UUID) -> Optional[Book]:
-        return db.query(Book).filter(Book.id == book_id).first()
+    async def get_all(self, limit: int, offset: int) -> List[dict]:
+        cursor = self.collection.find({}).skip(offset).limit(limit)
+        return await cursor.to_list(length=limit)
 
-    def create(self, db: Session, book_data: dict) -> Book:
-        db_book = Book(**book_data)
-        db.add(db_book)
-        db.commit()
-        db.refresh(db_book)
-        return db_book
+    async def get_by_id(self, book_id: str) -> Optional[dict]:
+        return await self.collection.find_one({"_id": PydanticObjectId(book_id)})
 
-    def delete(self, db: Session, book_id: UUID) -> bool:
-        db_book = self.get_by_id(db, book_id)
-        if db_book:
-            db.delete(db_book)
-            db.commit()
-            return True
-        return False
+    async def create(self, book_data: dict) -> dict:
+        result = await self.collection.insert_one(book_data)
+        book_data["_id"] = result.inserted_id
+        return book_data
+
+    async def delete(self, book_id: str) -> bool:
+        response = await self.collection.delete_one({"_id": PydanticObjectId(book_id)})
+        return response.deleted_count > 0
