@@ -3,25 +3,23 @@ from pydantic_mongo import PydanticObjectId
 
 class MongoBookRepository:
     def __init__(self, db):
-        
         self.collection = db.books
 
-    def get_all(self, limit: int, offset: int) -> List[dict]:
-        
+    async def get_all(self, limit: int, offset: int) -> List[dict]:
         cursor = self.collection.find({}).skip(offset).limit(limit)
-        return list(cursor)
+        return await cursor.to_list(length=limit)
 
-    def get_by_id(self, book_id: str) -> Optional[dict]:
-       
-        return self.collection.find_one({"_id": PydanticObjectId(book_id)})
+    async def get_by_id(self, book_id: str) -> Optional[dict]:
+        
+        return await self.collection.find_one({"_id": PydanticObjectId(book_id)})
 
-    def create(self, book_data: dict) -> dict:
-      
-        result = self.collection.insert_one(book_data)
+    async def create(self, book_data: dict) -> dict:
+        
+        result = await self.collection.insert_one(book_data)
         book_data["_id"] = result.inserted_id
         return book_data
 
-    def delete(self, book_id: str) -> bool:
+    async def delete(self, book_id: str) -> bool:
         
-        response = self.collection.delete_one({"_id": PydanticObjectId(book_id)})
+        response = await self.collection.delete_one({"_id": PydanticObjectId(book_id)})
         return response.deleted_count > 0
