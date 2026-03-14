@@ -1,7 +1,6 @@
-fastapi
-uvicorn
-motor
+flask
+flask-restful
+flasgger
+pymongo
+pydantic
 pydantic-mongo
-httpx
-pytest
-pytest-asyncio
