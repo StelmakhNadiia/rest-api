@@ -6,7 +6,7 @@ from main import app
 async def test_cursor_pagination():
     transport = ASGITransport(app=app)
     async with AsyncClient(transport=transport, base_url="http://test") as ac:
-      
+     
         for i in range(3):
             await ac.post("/books/", json={
                 "title": f"Lab3 Book {i}",
@@ -15,14 +15,13 @@ async def test_cursor_pagination():
                 "status": "наявна в бібліотеці"
             })
 
-       
         res1 = await ac.get("/books/", params={"limit": 1})
         assert res1.status_code == 200
         page1 = res1.json()
         assert len(page1["items"]) == 1
         assert page1["next_cursor"] is not None
 
-       
+
         cursor = page1["next_cursor"]
         res2 = await ac.get("/books/", params={"limit": 1, "cursor": cursor})
         assert res2.status_code == 200
