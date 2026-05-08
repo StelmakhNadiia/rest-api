@@ -1,19 +1,14 @@
-from pydantic import BaseModel, Field, ConfigDict
-from uuid import UUID, uuid4
+from pydantic import BaseModel, Field
+from uuid import UUID
 from typing import Optional
 from app.models.book import BookStatus
 
-class BookBase(BaseModel):
-    title: str = Field(..., min_length=1, max_length=100)
-    author: str = Field(..., min_length=2, max_length=50)
-    description: Optional[str] = None
+class BookCreate(BaseModel):
+    title: str = Field(..., min_length=1)
+    author: str = Field(..., min_length=1)
+    description: str
     status: BookStatus = BookStatus.AVAILABLE
-    year: int = Field(..., gt=0, lt=2027)
+    year: int = Field(..., gt=0)
 
-class BookCreate(BookBase):
-    pass
-
-class BookRead(BookBase):
-    id: UUID = Field(default_factory=uuid4)
-    
-    model_config = ConfigDict(from_attributes=True)
+class BookRead(BookCreate):
+    id: UUID
