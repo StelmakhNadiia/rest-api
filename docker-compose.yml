@@ -1,7 +1,6 @@
 version: "3.9"
 
 services:
-
   mongo:
     image: mongo:7
     container_name: library_mongo
@@ -11,15 +10,24 @@ services:
     volumes:
       - mongo_data:/data/db
 
+
+  redis:
+    image: redis:latest
+    container_name: book-cache
+    ports:
+      - "6379:6379"
+
   api:
     build: .
     container_name: library_api
     depends_on:
       - mongo
+      - redis
     ports:
       - "8000:8000"
     environment:
       - MONGO_URL=mongodb://mongo:27017
+      - REDIS_URL=redis
 
 volumes:
   mongo_data:

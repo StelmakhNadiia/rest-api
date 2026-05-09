@@ -6,8 +6,13 @@ from schemas.book_schema import BookCreate, Book
 from services import book_service
 from auth.auth_handler import create_tokens, get_password_hash, verify_password, decode_jwt
 from auth.auth_bearer import JWTBearer
+from rate_limiter import rate_limit
 
-app = FastAPI(title="Library API with JWT")
+
+app = FastAPI(
+    title="Library API with JWT",
+    dependencies=[Depends(rate_limit)]
+)
 
 
 @app.post("/user/signup", tags=["User"])
