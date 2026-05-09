@@ -1,11 +1,11 @@
 from fastapi import FastAPI
-from app.api.book_router import router as book_router
+from api.books import router as books_router
 
-app = FastAPI(title="Library API (MongoDB)")
+app = FastAPI()
 
+app.include_router(books_router)
 
-app.include_router(book_router)
 
 @app.get("/")
 async def root():
-    return {"message": "Welcome to the Library API with MongoDB!"}
+    return {"message": "Library API is running"}
