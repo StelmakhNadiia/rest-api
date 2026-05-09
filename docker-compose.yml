@@ -38,5 +38,15 @@ services:
       - ./openapi.yaml:/usr/src/api/openapi.yaml:ro
     command: mock -m false -h 0.0.0.0 /usr/src/api/openapi.yaml
 
+  locust:
+    image: locustio/locust
+    container_name: library_locust
+    ports:
+      - "8089:8089"
+    volumes:
+      - ./locustfile.py:/mnt/locust/locustfile.py:ro
+    command: -f /mnt/locust/locustfile.py --host http://api:8000
+    depends_on:
+      - api
 volumes:
   mongo_data:

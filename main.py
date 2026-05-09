@@ -11,7 +11,7 @@ from rate_limiter import rate_limit
 
 app = FastAPI(
     title="Library API with JWT",
-    dependencies=[Depends(rate_limit)]
+  
 )
 
 
