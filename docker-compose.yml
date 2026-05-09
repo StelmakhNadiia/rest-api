@@ -1,29 +1,25 @@
-services:
-  api:
-    build: .
-    container_name: restapi-api-1
-    ports:
-      - "8000:8000"
-    environment:
-      - MONGO_URL=mongodb://mongo_admin:password@mongo_db:27017
-    volumes:
-      - .:/app
-    # Використовуємо --reload для розробки, щоб сервер не вимикався
-    command: uvicorn main:app --host 0.0.0.0 --port 8000 --reload
-    depends_on:
-      - mongo_db
+version: "3.9"
 
-  mongo_db:
-    image: mongo:latest
-    container_name: restapi-mongo_db-1
-    environment:
-      MONGO_INITDB_ROOT_USERNAME: mongo_admin
-      MONGO_INITDB_ROOT_PASSWORD: password
-      MONGO_INITDB_DATABASE: books
+services:
+
+  mongo:
+    image: mongo:7
+    container_name: library_mongo
+    restart: always
     ports:
       - "27017:27017"
     volumes:
       - mongo_data:/data/db
+
+  api:
+    build: .
+    container_name: library_api
+    depends_on:
+      - mongo
+    ports:
+      - "8000:8000"
+    environment:
+      - MONGO_URL=mongodb://mongo:27017
 
 volumes:
   mongo_data:
