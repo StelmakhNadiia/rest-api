@@ -1,0 +1,119 @@
+openapi: 3.0.3
+info:
+  title: Library API Mock
+  description: Тестовий сервер для API бібліотеки, що використовує Stoplight Prism
+  version: 1.0.0
+servers:
+  - url: http://localhost:4010
+    description: Prism Mock Server
+paths:
+  /books/:
+    get:
+      summary: Get all books
+      tags:
+        - Books
+      parameters:
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            example: 10
+        - name: offset
+          in: query
+          schema:
+            type: integer
+            example: 0
+      responses:
+        '200':
+          description: A list of books
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Book'
+              examples:
+                success:
+                  summary: Успішне отримання списку книг
+                  value:
+                    - id: "64a2b9c8d1e2f3g4h5j6k7l8"
+                      title: "Тигролови"
+                      author: "Іван Багряний"
+                      description: "Пригодницький роман про незламність людського духу в умовах радянського терору."
+                      status: "available"
+                      year: 1944
+                    - id: "55b3c4d5e6f7g8h9i0j1k2l3"
+                      title: "1984"
+                      author: "Джордж Орвелл"
+                      description: "Культовий роман-антиутопія про тоталітарний контроль та обмеження свободи."
+                      status: "borrowed"
+                      year: 1949
+
+    post:
+      summary: Add a new book
+      tags:
+        - Books
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/BookCreate'
+            examples:
+              newBook:
+                summary: Приклад додавання нової книги
+                value:
+                  title: "Intermezzo"
+                  author: "Михайло Коцюбинський"
+                  description: "Психологічна новела про пошук душевного спокою серед природи."
+                  status: "available"
+                  year: 1908
+      responses:
+        '201':
+          description: Book created successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Book'
+              examples:
+                created:
+                  summary: Відповідь при успішному створенні
+                  value:
+                    id: "99x8w7v6u5t4s3r2q1p0o9n8"
+                    title: "Intermezzo"
+                    author: "Михайло Коцюбинський"
+                    description: "Психологічна новела про пошук душевного спокою серед природи."
+                    status: "available"
+                    year: 1908
+
+components:
+  schemas:
+    BookCreate:
+      type: object
+      required:
+        - title
+        - author
+        - description
+        - status
+        - year
+      properties:
+        title:
+          type: string
+        author:
+          type: string
+        description:
+          type: string
+        status:
+          type: string
+          enum: [available, borrowed]
+        year:
+          type: integer
+    Book:
+      allOf:
+        - $ref: '#/components/schemas/BookCreate'
+        - type: object
+          required:
+            - id
+          properties:
+            id:
+              type: string

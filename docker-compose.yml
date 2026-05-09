@@ -29,5 +29,14 @@ services:
       - MONGO_URL=mongodb://mongo:27017
       - REDIS_URL=redis
 
+  prism-mock:
+    image: stoplight/prism:5
+    container_name: library_prism_mock
+    ports:
+      - "4010:4010"
+    volumes:
+      - ./openapi.yaml:/usr/src/api/openapi.yaml:ro
+    command: mock -m false -h 0.0.0.0 /usr/src/api/openapi.yaml
+
 volumes:
   mongo_data:
