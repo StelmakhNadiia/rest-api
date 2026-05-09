@@ -1,18 +1,18 @@
 from fastapi import FastAPI
-from app.api.book_router import router as book_router
-from app.core.database import engine, Base 
-import app.models.book 
+from api.books import router as books_router
 
-Base.metadata.create_all(bind=engine)
+from database.db import Base, engine
+from models.book_model import BookModel
 
-app = FastAPI(
-    title="Library REST API",
-    description="",
-    version="1.0.0"
-)
+app = FastAPI()
 
-app.include_router(book_router)
+@app.on_event("startup")
+def startup():
+    Base.metadata.create_all(bind=engine)
+
+app.include_router(books_router)
+
 
 @app.get("/")
 async def root():
-    return {"message": "Welcome to the Library API"}
+    return {"message": "Library API is running"}

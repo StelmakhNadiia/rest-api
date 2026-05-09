@@ -1,30 +1,59 @@
-import pytest
-from httpx import ASGITransport, AsyncClient
+import sys
+import os
+
+DATABASE_URL = os.getenv(
+    "DATABASE_URL",
+    "postgresql://postgres:postgres@localhost:5432/library"
+)
+
+sys.path.append(os.path.dirname(os.path.dirname(__file__)))
+
+from fastapi.testclient import TestClient
 from main import app
 
-@pytest.mark.asyncio
-async def test_cursor_pagination():
-    transport = ASGITransport(app=app)
-    async with AsyncClient(transport=transport, base_url="http://test") as ac:
-     
-        for i in range(3):
-            await ac.post("/books/", json={
-                "title": f"Lab3 Book {i}",
-                "author": "Author",
-                "year": 2024,
-                "status": "наявна в бібліотеці"
-            })
-
-        res1 = await ac.get("/books/", params={"limit": 1})
-        assert res1.status_code == 200
-        page1 = res1.json()
-        assert len(page1["items"]) == 1
-        assert page1["next_cursor"] is not None
+client = TestClient(app)
 
 
-        cursor = page1["next_cursor"]
-        res2 = await ac.get("/books/", params={"limit": 1, "cursor": cursor})
-        assert res2.status_code == 200
-        page2 = res2.json()
-        assert len(page2["items"]) == 1
-        assert page2["items"][0]["id"] != page1["items"][0]["id"]
+def test_add_book():
+    response = client.post(
+        "/books/",
+        json={
+            "title": "Test Book",
+            "author": "Test Author",
+            "description": "Test Description",
+            "status": "available",
+            "year": 2024
+        }
+    )
+
+    assert response.status_code == 201
+    data = response.json()
+    assert data["title"] == "Test Book"
+    assert "id" in data
+
+
+def test_get_books():
+    response = client.get("/books/")
+    assert response.status_code == 200
+    data = response.json()
+    assert isinstance(data, dict)
+    assert "items" in data
+    assert isinstance(data["items"], list)
+
+
+def test_delete_book():
+    create_response = client.post(
+        "/books/",
+        json={
+            "title": "Delete Book",
+            "author": "Author",
+            "description": "Desc",
+            "status": "available",
+            "year": 2023
+        }
+    )
+
+    book_id = create_response.json()["id"]
+
+    delete_response = client.delete(f"/books/{book_id}")
+    assert delete_response.status_code == 204

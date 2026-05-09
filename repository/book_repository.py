@@ -1,0 +1,56 @@
+from sqlalchemy.orm import Session
+from uuid import UUID
+import uuid
+
+from models.book_model import BookModel
+from schemas.book_schema import BookCreate
+
+
+def get_books(db: Session, limit: int, cursor: UUID | None):
+
+    query = db.query(BookModel)
+
+    if cursor:
+        query = query.filter(BookModel.id > cursor)
+
+    books = query.order_by(BookModel.id).limit(limit).all()
+
+    return books
+
+
+def get_book(db: Session, book_id: UUID):
+    return db.query(BookModel).filter(BookModel.id == book_id).first()
+
+
+def create_book(db: Session, book: BookCreate):
+
+    new_book = BookModel(
+        id=uuid.uuid4(),
+        title=book.title,
+        author=book.author,
+        description=book.description,
+        status=book.status,
+        year=book.year
+    )
+
+    db.add(new_book)
+    db.commit()
+    db.refresh(new_book)
+
+    return new_book
+
+
+def delete_book(db: Session, book_id: UUID):
+
+    book = db.query(BookModel).filter(BookModel.id == book_id).first()
+
+    if book:
+        db.delete(book)
+        db.commit()
+
+
+    return True
+async def get_books(db: Session, limit: int, offset: int):
+    items = db.query(BookModel).offset(offset).limit(limit).all()
+    total = db.query(BookModel).count()
+    return items, total
