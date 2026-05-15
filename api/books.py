@@ -1,53 +1,32 @@
 from fastapi import APIRouter, HTTPException, Depends, Query
 from sqlalchemy.orm import Session
-from typing import List
 from uuid import UUID
 
-from schemas.book_schema import BookCreate, Book , BookPaginationResponse
-from services.book_service import (
-    get_books_service,
-    get_book_service,
-    create_book_service,
-    remove_book_service
-)
+from schemas.book_schema import BookCreate, BookRead, BookPaginationResponse
+from services.book_service import BookService
 from database.db import get_db
+
 
 router = APIRouter(prefix="/books", tags=["Books"])
 
-
-
 @router.get("/", response_model=BookPaginationResponse)
 async def get_all_books(
-        limit: int = Query(10, ge=1),
-        cursor: str | None = None,
-        db: Session = Depends(get_db)
+    limit: int = Query(10, ge=1),
+    cursor: str | None = None,
+    db: Session = Depends(get_db)
 ):
-    return await get_books_service(db, limit, cursor)
-
-@router.get("/{book_id}", response_model=Book)
-async def get_book_by_id(
-        book_id: UUID,
-        db: Session = Depends(get_db)
-):
-    book = await get_book_service(db, book_id)
-
-    if not book:
-        raise HTTPException(status_code=404, detail="Book not found")
-
-    return book
+    return await BookService.get_books_paginated(db, limit, cursor)
 
 
-@router.post("/", response_model=Book, status_code=201)
-async def add_book(
-        book: BookCreate,
-        db: Session = Depends(get_db)
-):
-    return await create_book_service(db, book)
-
+@router.post("/", response_model=BookRead, status_code=201)
+async def add_book(book: BookCreate, db: Session = Depends(get_db)):
+   return await BookService.create_new_book(db, book)
 
 @router.delete("/{book_id}", status_code=204)
 async def delete_book(
-        book_id: UUID,
-        db: Session = Depends(get_db)
+    book_id: UUID,
+    db: Session = Depends(get_db)
 ):
-    await remove_book_service(db, book_id)
+    success = await BookService.remove_book(db, book_id)
+    if not success:
+        raise HTTPException(status_code=404, detail="Book not found")

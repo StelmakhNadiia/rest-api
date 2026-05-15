@@ -1,12 +1,11 @@
 from pydantic import BaseModel, Field
 from uuid import UUID
 from enum import Enum
-from typing import List
+from typing import List, Optional  
 
 class BookStatus(str, Enum):
     available = "available"
     borrowed = "borrowed"
-
 
 class BookCreate(BaseModel):
     title: str = Field(..., min_length=1)
@@ -15,12 +14,13 @@ class BookCreate(BaseModel):
     status: BookStatus
     year: int = Field(..., ge=0)
 
-
-class Book(BookCreate):
+class BookRead(BookCreate):
     id: UUID
 
+    class Config:
+        from_attributes = True 
+
 class BookPaginationResponse(BaseModel):
-    items: List[Book]
-    total: int
+    items: List[BookRead]
+    next_cursor: Optional[str] = None 
     limit: int
-    offset: int

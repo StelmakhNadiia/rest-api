@@ -1,10 +1,7 @@
-from typing import Optional, List, Dict, Any
+from typing import Optional, Dict, Any
 from sqlalchemy.orm import Session
-from uuid import UUID
-
-from models.book_model import BookModel
-from schemas.book_schema import BookCreate
 from repository import book_repository as repo
+from schemas.book_schema import BookCreate
 
 class BookService:
     @staticmethod
@@ -13,16 +10,11 @@ class BookService:
         limit: int = 10, 
         cursor: Optional[str] = None
     ) -> Dict[str, Any]:
-        """
-        за допомогою курсорної пагінації.
-        """
        
-        items = repo.get_all_books(db, limit=limit, cursor=cursor)
+        items = repo.get_books(db, limit=limit, cursor=cursor)
         
-       
         next_cursor = None
         if len(items) == limit:
-           
             next_cursor = str(items[-1].id)
             
         return {
@@ -33,6 +25,7 @@ class BookService:
 
     @staticmethod
     async def get_book_by_id(db: Session, book_id: str):
+       
         return repo.get_book(db, book_id)
 
     @staticmethod
@@ -42,4 +35,5 @@ class BookService:
 
     @staticmethod
     async def remove_book(db: Session, book_id: str) -> bool:
-        return await repo.delete_book(db, book_id)
+        
+        return repo.delete_book(db, book_id)
