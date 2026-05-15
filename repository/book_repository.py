@@ -3,6 +3,7 @@ from schemas.book_schema import BookCreate
 
 
 async def get_books(collection, limit: int, offset: int):
+    total_count = await collection.count_documents({})
 
     cursor = collection.find().skip(offset).limit(limit)
     books = []
@@ -10,7 +11,8 @@ async def get_books(collection, limit: int, offset: int):
         book["id"] = str(book["_id"])
         del book["_id"]
         books.append(book)
-    return books
+        
+    return books, total_count
 
 
 async def get_book(collection, book_id: str):
