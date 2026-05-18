@@ -2,7 +2,7 @@ version: "3.9"
 
 services:
   mongo:
-    image: mongo:7
+    image: mongo:latest
     container_name: library_mongo
     restart: always
     ports:

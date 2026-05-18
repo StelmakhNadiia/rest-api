@@ -6,8 +6,9 @@ pydantic-mongo
 python-jose[cryptography]
 passlib[bcrypt]
 python-multipart
-passlib[bcrypt]
 bcrypt==3.2.0
 pytest
 pytest-asyncio
 httpx
+email-validator
+redis
